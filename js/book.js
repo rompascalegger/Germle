@@ -23,20 +23,26 @@ const Book = (() => {
     habitat: (a, b) => a.habitat.localeCompare(b.habitat, 'de') || a.name.localeCompare(b.name),
   };
 
+  /* Ein Filterwert mit "!" davor bedeutet "ist nicht" */
+  const keep = (f, actual) => !f || (f[0] === '!' ? String(actual) !== f.slice(1) : String(actual) === f);
+
   function filtered(S) {
     const q = norm(F.q.trim());
     const words = q ? q.split(/\s+/) : [];
+    const pos = words.filter(w => w[0] !== '-');
+    const neg = words.filter(w => w[0] === '-').map(w => w.slice(1)).filter(Boolean);
     return IDX.filter(({ m, k }) => {
-      if (words.length && !words.every(w => k.includes(w))) return false;
-      if (F.type && m.typeCode !== F.type) return false;
-      if (F.group && m.guildGroup !== F.group) return false;
-      if (F.guild && m.guild !== F.guild) return false;
-      if (F.sub && m.substrateGroup !== F.sub) return false;
-      if (F.hab && m.habitatGroup !== F.hab) return false;
-      if (F.form && m.form !== F.form) return false;
-      if (F.ox && m.oxygen !== F.ox) return false;
-      if (F.temp && m.temp !== F.temp) return false;
-      if (F.rar && m.rarity !== +F.rar) return false;
+      if (pos.length && !pos.every(w => k.includes(w))) return false;
+      if (neg.length && neg.some(w => k.includes(w))) return false;
+      if (!keep(F.type, m.typeCode)) return false;
+      if (!keep(F.group, m.guildGroup)) return false;
+      if (!keep(F.guild, m.guild)) return false;
+      if (!keep(F.sub, m.substrateGroup)) return false;
+      if (!keep(F.hab, m.habitatGroup)) return false;
+      if (!keep(F.form, m.form)) return false;
+      if (!keep(F.ox, m.oxygen)) return false;
+      if (!keep(F.temp, m.temp)) return false;
+      if (!keep(F.rar, m.rarity)) return false;
       if (F.only === 'found' && !S.discovered[m.id]) return false;
       if (F.only === 'missing' && S.discovered[m.id]) return false;
       if (F.only === 'escaped' && !S.escaped[m.id]) return false;
@@ -44,8 +50,11 @@ const Book = (() => {
     }).map(x => x.m).sort(SORTS[F.sort]);
   }
 
+  const one = (v, val, text) => `<option value="${esc(v)}"${String(val) === String(v) ? ' selected' : ''}>${esc(text)}</option>`;
+  /* Jede Liste einmal als "ist" und einmal als "ist nicht" (Wert mit "!" davor) */
   const opt = (list, val, label = x => x) =>
-    list.map(x => `<option value="${esc(x)}"${String(val) === String(x) ? ' selected' : ''}>${esc(label(x))}</option>`).join('');
+    `<optgroup label="ist">${list.map(x => one(x, val, label(x))).join('')}</optgroup>` +
+    `<optgroup label="ist nicht">${list.map(x => one('!' + x, val, 'nicht ' + label(x))).join('')}</optgroup>`;
 
   /* ---------- Steckbrief ---------- */
   function entry(m, S) {
@@ -73,13 +82,14 @@ const Book = (() => {
   /* ---------- Panel ---------- */
   function panel(S) {
     const found = Object.keys(S.discovered).length;
-    const types = [['', 'Alle Reiche'], ['B', 'Bakterien'], ['A', 'Archaeen'], ['P', 'Pilze'], ['V', 'Viren']];
+    const TL = { B: 'Bakterien', A: 'Archaeen', P: 'Pilze', V: 'Viren' };
     return `<div class="bk">
       <h2>📚 Das Große Lexikon der Keime <small>${M.length} Einträge · ${found} entdeckt</small></h2>
-      <p class="muted">Jede Mikrobe des Spiels mit Gilde, Nährboden, Ansprüchen und Fundort. Der <b>Codex</b> ist deine Sammlung – das Lexikon ist dein Nachschlagewerk beim Bestimmen.</p>
+      <p class="muted">Jede Mikrobe des Spiels mit Gilde, Nährboden, Ansprüchen und Fundort. Der <b>Codex</b> ist deine Sammlung – das Lexikon ist dein Nachschlagewerk beim Bestimmen.
+      Jeder Filter kann auch <b>ausschließen</b> („nicht Pilze“) – ideal für alles, was eine ⬛-Spalte schon widerlegt hat. In der Suche schließt ein Minus ein Wort aus: <code>sediment -virus</code>.</p>
       <div class="bk-filters">
-        <input id="bkQ" type="search" placeholder="Suchen: Name, Gilde, Nährboden, Fakt …" value="${esc(F.q)}" autocomplete="off">
-        <select id="bkType">${types.map(([v, l]) => `<option value="${v}"${F.type === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <input id="bkQ" type="search" placeholder="Suchen: Name, Gilde, Nährboden, Fakt … (−wort schließt aus)" value="${esc(F.q)}" autocomplete="off">
+        <select id="bkType"><option value="">Alle Reiche</option>${opt(['B', 'A', 'P', 'V'], F.type, t => TL[t])}</select>
         <select id="bkGroup"><option value="">Alle Gildengruppen</option>${opt(uniq(m => m.guildGroup), F.group)}</select>
         <select id="bkGuild"><option value="">Alle Gilden</option>${opt(uniq(m => m.guild), F.guild)}</select>
         <select id="bkSub"><option value="">Alle Nährböden</option>${opt(uniq(m => m.substrateGroup), F.sub)}</select>
@@ -123,10 +133,12 @@ const Book = (() => {
 
   function bind(S) {
     const map = { bkQ: 'q', bkType: 'type', bkGroup: 'group', bkGuild: 'guild', bkSub: 'sub', bkHab: 'hab', bkForm: 'form', bkOx: 'ox', bkTemp: 'temp', bkRar: 'rar', bkOnly: 'only', bkSort: 'sort' };
+    const mark = el => el.classList.toggle('neg', String(el.value).startsWith('!'));
     Object.entries(map).forEach(([id, key]) => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { F[key] = el.value; renderList(S); });
+      mark(el);
+      el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { F[key] = el.value; mark(el); renderList(S); });
     });
     const r = document.getElementById('bkReset');
     if (r) r.addEventListener('click', () => { Object.keys(F).forEach(k => F[k] = k === 'sort' ? 'name' : ''); open(S); });
@@ -137,5 +149,12 @@ const Book = (() => {
   function open(S) { if (opener) opener(panel(S), 'wide'); bind(S); }
   function init(openModal) { opener = openModal; }
 
-  return { init, open, panel, bind, F };
+  /* Lexikon direkt auf einen Tipp gefiltert öffnen */
+  function openWith(S, patch) {
+    Object.keys(F).forEach(k => { F[k] = k === 'sort' ? 'name' : ''; });
+    Object.assign(F, patch || {});
+    open(S);
+  }
+
+  return { init, open, openWith, panel, bind, F };
 })();

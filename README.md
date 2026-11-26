@@ -20,7 +20,7 @@ Nach Änderungen die Versionsnummer `?v=` in `index.html` erhöhen, damit Browse
 2. Pro Probe **7 Integritätspunkte**. Jede falsche Bestimmung und jeder Nährboden-Test kostet einen.
 3. **Bestimmen:** 7 Spalten Feedback – Typ, Gilde, Nährboden, O₂, Temperatur, Habitat, Form (🟩 Treffer, 🟨 gleiche Gruppe / Nachbarstufe, ⬛ falsch).
 4. **Nährboden-Test:** Plättchen (Nitrat, Eisen(II), Sulfat, Methan, Licht, Holz, Wirt: Bakterium …) zeigt starkes, schwaches oder kein Wachstum.
-5. **Hinweise:** Fundort sofort, Typ nach 3 Aktionen, Anfangsbuchstabe nach 5. Die Koloniefarbe verrät die Gildengruppe.
+5. **Tipps:** Der erste ist gratis, jede weitere Aktion deckt einen weiteren auf – bis zu 12. Die Kategorie ist jedes Mal zufällig (Typ, Gilde, Gildengruppe, Nährboden, Nährbodengruppe, Lebensraum, Fundort, Sauerstoff, Temperatur, Form, Seltenheit, Anfangsbuchstabe) und pro Probe fest gemischt. Ein Klick auf einen Tipp öffnet das **Lexikon**, bereits danach gefiltert – damit wird Nachschlagen zum eigentlichen Spielzug. Die Koloniefarbe ist reine Deko und verrät nichts.
 6. Integrität 0 → **☣ BIOHAZARD ALARM** (Sirene, Blinken, Vibration) – Game Over für diese Probe, die Mikrobe entkommt.
 
 ## Dopaminzyklus
@@ -30,10 +30,11 @@ Nach Änderungen die Versionsnummer `?v=` in `index.html` erhöhen, damit Browse
 - **Fortschritt:** XP, 12 Laborlevel (Praktikant:in → Nobelpreisträger:in), Gilden- und Gruppen-Sets mit Bonus-XP, Codex-Prozent, 55 Errungenschaften.
 - **Verknappung & Rückkehr:** Countdown bis Mitternacht, Streak 🔥, „fast voll“-Blinken am Gratis-Meter.
 - **Teilen:** Wordle-artiges Emoji-Ergebnis in die Zwischenablage.
+- **Geheimnis:** Im Labor ist ein geheimer Knopf versteckt, der einmal pro Tag eine zusätzliche Probe freischaltet und sofort startet. Zwei geheime Errungenschaften hängen daran. <details><summary>Spoiler: wo?</summary>Der kleine Punkt am Ende der Fußzeile – er wird beim Darüberfahren sichtbar. Alternativ irgendwo `agar` tippen.</details>
 
 ## Lexikon & Errungenschaften
 
-- **📚 Das Große Lexikon der Keime** – Nachschlagewerk mit allen 323 Mikroben: Steckbrief mit Gilde, Gildengruppe, Nährboden, Sauerstoffbedarf, Temperatur, Lebensraum, Form, Seltenheit und Fakt. Volltextsuche plus Filter nach Reich, Gilde, Nährboden, Lebensraum, Form, O₂, Temperatur, Seltenheit und Fundstatus (entdeckt / fehlend / entkommen), dazu sechs Sortierungen. Der **Codex** ist die eigene Sammlung, das Lexikon das Werkzeug beim Bestimmen.
+- **📚 Das Große Lexikon der Keime** – Nachschlagewerk mit allen 323 Mikroben: Steckbrief mit Gilde, Gildengruppe, Nährboden, Sauerstoffbedarf, Temperatur, Lebensraum, Form, Seltenheit und Fakt. Volltextsuche plus Filter nach Reich, Gilde, Nährboden, Lebensraum, Form, O₂, Temperatur, Seltenheit und Fundstatus (entdeckt / fehlend / entkommen), dazu sechs Sortierungen. Jeder Filter kann auch **ausschließen** („nicht Pilze“, „nicht mesophil“) – genau das, was eine ⬛-Spalte im Rateraster schon widerlegt hat; ausschließende Filter sind rot markiert. In der Suche schließt ein Minus ein Wort aus (`sediment -virus`). Der **Codex** ist die eigene Sammlung, das Lexikon das Werkzeug beim Bestimmen.
 - **🏅 55 Errungenschaften** in vier Stufen (Bronze, Silber, Gold, Platin) mit Fortschrittsbalken: Reiche komplettieren, Stoffkreisläufe schließen, Seltenheiten jagen, Volltreffer, Biohazards überstehen, Streaks und Laborlevel. Freischaltungen erscheinen als Toast und werden mit Datum gespeichert; ältere Spielstände werden beim Laden nachgerechnet.
 
 ## Aufbau

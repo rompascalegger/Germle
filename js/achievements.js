@@ -80,6 +80,10 @@ const Achievements = (() => {
     { id: 'streak7', t: 'Laborwoche', d: 'Erreiche einen Streak von 7 Tagen.', i: '🔥', tier: 2, goal: 7, p: S => S.best },
     { id: 'streak30', t: 'Monat im Labor', d: 'Erreiche einen Streak von 30 Tagen.', i: '🔥', tier: 4, goal: 30, p: S => S.best },
     { id: 'token3', t: 'Vorratskammer', d: 'Horte 3 Gratisproben gleichzeitig.', i: '🎟️', tier: 2, goal: 3, p: S => S.stats.maxTokens || 0 },
+
+    // --- Geheim ---
+    { id: 'secret1', t: 'Schwarzmarkt-Agar', d: 'Finde den geheimen Knopf im Labor.', i: '🕳️', tier: 2, goal: 1, secret: true, p: S => S.stats.secrets || 0 },
+    { id: 'secret7', t: 'Stammkunde', d: 'Nutze den geheimen Knopf an 7 Tagen.', i: '🗝️', tier: 3, goal: 7, secret: true, p: S => S.stats.secrets || 0 },
     { id: 'level5', t: 'Beförderung', d: 'Erreiche Laborlevel 5.', i: '⬆️', tier: 2, goal: 5, p: () => Germle.level().n },
     { id: 'level10', t: 'Laborleitung', d: 'Erreiche Laborlevel 10.', i: '🎓', tier: 3, goal: 10, p: () => Germle.level().n },
     { id: 'level12', t: 'Nobelpreis', d: 'Erreiche Laborlevel 12.', i: '🥇', tier: 4, goal: 12, p: () => Germle.level().n },

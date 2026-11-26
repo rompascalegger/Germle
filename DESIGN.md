@@ -29,7 +29,7 @@ Gemeinsame Grundregeln für alle Vorschläge:
 2. **Handlung** – Kurze Runde (1–3 Minuten), sofort verständliches Feedback (grün/gelb/grau).
 3. **Variable Belohnung** – Gewichtete Zufallsziehung: häufige Mikroben kommen öfter, eine **legendäre** (z. B. *Thiomargarita magnifica*) ist ein seltener Glücksmoment mit Gold-Glow.
 4. **Investition** – Codex füllt sich, Gilden-Sets werden komplett, Laborlevel steigt (Praktikant → Nobelpreisträger), Errungenschaften schalten frei (55 Stück in vier Stufen – jede zeigt ihren Fortschritt, damit immer eine sichtbar kurz vor dem Ziel steht).
-5. **Verknappung** – Nur 3 Proben. Wer verliert, sieht den Biohazard-Alarm – Spannung und Revanche-Wunsch für morgen.
+5. **Verknappung** – Nur 3 Proben. Wer verliert, sieht den Biohazard-Alarm – Spannung und Revanche-Wunsch für morgen. Ein geheimer Knopf im Labor gibt einmal täglich eine Extraprobe: ein Fund, über den man redet, ohne die Verknappung zu kippen.
 6. **Teilen** – Wordle-artiges Emoji-Ergebnis (🟩🟨⬛ / ☣️) zum Kopieren.
 
 ---

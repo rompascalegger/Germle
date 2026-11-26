@@ -13,8 +13,7 @@ const Germle = (() => {
     TOKEN_EVERY: 5,         // Entdeckungen bis zur Gratisprobe
     TOKEN_MAX: 3,
     STREAK_TOKEN_EVERY: 3,  // alle 3 Tage Streak = Gratisprobe
-    HINT_TYPE_AT: 3,        // nach 3 Aktionen wird der Typ verraten
-    HINT_LETTER_AT: 5,      // nach 5 Aktionen der Anfangsbuchstabe
+    HINT_FREE: 1,           // erster Tipp gratis, danach einer pro Aktion
     XP_PER_INTEGRITY: 4,
     GUILD_BONUS: 30,
     GROUP_BONUS: 150,
@@ -53,8 +52,8 @@ const Germle = (() => {
   const fresh = () => ({
     v: 1, xp: 0, tokens: 0, meter: 0, streak: 0, best: 0, lastPlay: null,
     discovered: {}, escaped: {}, guildsDone: {}, groupsDone: {},
-    stats: { wins: 0, losses: 0, perfect: 0, tests: 0, clean: 0, maxTokens: 0 },
-    achv: {},
+    stats: { wins: 0, losses: 0, perfect: 0, tests: 0, clean: 0, maxTokens: 0, secrets: 0 },
+    achv: {}, secretDay: null,
     day: null, sound: true, seenHelp: false,
   });
   let S = load();
@@ -238,14 +237,64 @@ const Germle = (() => {
     }
   }
 
-  /* ---------- Hinweise ---------- */
+  /* ---------- Geheimer Knopf ----------
+     Versteckt im Labor: schaltet einmal pro Tag eine zusätzliche Probe frei
+     („Schwarzmarkt-Agarplatte“).                                           */
+  function secret() {
+    const today = ensureDay().date;
+    if (S.secretDay === today) return { ok: false, why: 'used' };
+    S.secretDay = today;
+    S.stats.secrets = (S.stats.secrets || 0) + 1;
+    S.tokens = Math.min(CFG.TOKEN_MAX + 1, S.tokens + 1);
+    S.stats.maxTokens = Math.max(S.stats.maxTokens || 0, S.tokens);
+    const achv = (typeof Achievements !== 'undefined') ? Achievements.check(S) : [];
+    save();
+    return { ok: true, achv, first: S.stats.secrets === 1 };
+  }
+  const secretReady = () => S.secretDay !== ensureDay().date;
+
+  /* ---------- Hinweise ----------
+     Der erste Tipp ist gratis, jede weitere Aktion (falsche Bestimmung oder
+     Nährboden-Test) deckt einen weiteren auf. Die Kategorie ist zufällig –
+     nachschlagen muss man im Lexikon.                                      */
+  const HINT_CATS = [
+    { k: 'Typ', v: m => m.type, f: m => ({ type: m.typeCode }) },
+    { k: 'Gildengruppe', v: m => m.guildGroup, f: m => ({ group: m.guildGroup }) },
+    { k: 'Gilde', v: m => m.guild, f: m => ({ guild: m.guild }) },
+    { k: 'Nährbodengruppe', v: m => m.substrateGroup, f: m => ({ sub: m.substrateGroup }) },
+    { k: 'Nährboden', v: m => m.substrate, f: m => ({ q: m.substrate }) },
+    { k: 'Lebensraum', v: m => m.habitatGroup, f: m => ({ hab: m.habitatGroup }) },
+    { k: 'Fundort', v: m => m.habitat, f: m => ({ q: m.habitat }) },
+    { k: 'Sauerstoff', v: m => (m.oxygen === '—' ? 'wirtsabhängig (Virus)' : m.oxygen), f: m => (m.oxygen === '—' ? { type: 'V' } : { ox: m.oxygen }) },
+    { k: 'Temperatur', v: m => m.temp, f: m => ({ temp: m.temp }) },
+    { k: 'Form', v: m => m.form, f: m => ({ form: m.form }) },
+    { k: 'Seltenheit', v: m => '★'.repeat(m.rarity) + ' ' + D.RARITY[m.rarity].name, f: m => ({ rar: String(m.rarity) }) },
+    { k: 'Anfangsbuchstabe', v: m => m.name[0] + ' …', f: null },
+  ];
+
+  /* Reihenfolge der Kategorien: pro Probe fest, aber zufällig gemischt */
+  function hintOrder(run) {
+    const r = rng(hash(`${run.target}#${ensureDay().date}#${run.idx}`));
+    const idx = HINT_CATS.map((_, i) => i);
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return idx;
+  }
+
+  const hintCount = run => Math.min(HINT_CATS.length, CFG.HINT_FREE + run.actions.length);
+
   function hints(run) {
     const t = byId[run.target];
-    const n = run.actions.length;
-    const h = [{ k: 'Fundort', v: t.habitatGroup }];
-    h.push(n >= CFG.HINT_TYPE_AT ? { k: 'Typ', v: t.type } : { k: 'Typ', v: `nach ${CFG.HINT_TYPE_AT} Aktionen`, locked: true });
-    h.push(n >= CFG.HINT_LETTER_AT ? { k: 'Beginnt mit', v: t.name[0] + '…' } : { k: 'Anfang', v: `nach ${CFG.HINT_LETTER_AT} Aktionen`, locked: true });
-    return h;
+    const order = hintOrder(run);
+    const n = hintCount(run);
+    const out = order.slice(0, n).map(i => {
+      const c = HINT_CATS[i];
+      return { k: c.k, v: c.v(t), filter: c.f ? c.f(t) : null };
+    });
+    if (n < HINT_CATS.length) out.push({ k: 'Nächster Tipp', v: 'nach der nächsten Aktion', locked: true });
+    return out;
   }
 
   /* ---------- Level ---------- */
@@ -308,6 +357,7 @@ const Germle = (() => {
 
   return {
     CFG, D, byId, get S() { return S; }, save, ensureDay, current, samplesLeft, canStart,
-    startSample, guess, test, compare, hints, level, search, shareText, msToMidnight, dev, dayKey,
+    startSample, guess, test, compare, hints, hintCount, HINT_CATS, secret, secretReady,
+    level, search, shareText, msToMidnight, dev, dayKey,
   };
 })();

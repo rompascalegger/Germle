@@ -10,8 +10,11 @@
   const DEV = new URLSearchParams(location.search).has('dev');
   const COLS = ['type', 'guild', 'substrate', 'oxygen', 'temp', 'habitat', 'form'];
   const VAL = { type: 'type', guild: 'guild', substrate: 'substrate', oxygen: 'oxygen', temp: 'temp', habitat: 'habitat', form: 'form' };
-  const colorOf = m => D.GROUP_COLORS[m.guildGroup] || '#8fe';
   const seedOf = id => { let h = 7; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+  // Koloniefarbe ist Deko, kein Hinweis – sonst wäre die Gildengruppe gratis verraten
+  const PALETTE = ['#7be3a0', '#ffd166', '#ff8fa3', '#6ad0ff', '#c9a26b', '#b88bff',
+    '#5ff2e0', '#ff9f45', '#9fe6c1', '#e8c37a', '#ff6b8a', '#8ed1fc'];
+  const colorOf = m => PALETTE[seedOf(m.id) % PALETTE.length];
 
   let lastRowCount = 0, selIdx = 0, suggestions = [];
 
@@ -95,8 +98,13 @@
     $('intCells').parentElement.classList.toggle('danger', run.integ <= 2 && active);
 
     const hs = G.hints(run);
-    $('hints').innerHTML = hs.map(h => `<span class="hint${h.locked ? ' locked' : ''}"><small>${esc(h.k)}</small>${esc(h.v)}</span>`).join('')
-      + `<span class="hint swatch"><small>Kolonie</small><i style="background:${colorOf(t)}"></i></span>`;
+    const nMax = G.HINT_CATS.length;
+    $('hints').innerHTML = `<span class="hint-head">💡 Tipps <b>${G.hintCount(run)}</b>/${nMax}</span>` + hs.map(h => {
+      if (h.locked) return `<span class="hint locked"><small>${esc(h.k)}</small>${esc(h.v)}</span>`;
+      const f = h.filter ? ` data-act="hintfilter" data-f="${esc(JSON.stringify(h.filter))}" title="Im Lexikon nachschlagen"` : '';
+      const tag = h.filter ? 'button' : 'span';
+      return `<${tag} class="hint fresh${h.filter ? ' can' : ''}"${f}><small>${esc(h.k)}</small>${esc(h.v)}${h.filter ? '<i class="mag">🔎</i>' : ''}</${tag}>`;
+    }).join('');
 
     // Teststreifen
     $('testList').innerHTML = tests.map(a => `<span class="tchip ${a.r}">${esc(a.s)} · ${a.r === 'strong' ? 'starkes Wachstum' : a.r === 'weak' ? 'schwaches Wachstum' : 'kein Wachstum'}</span>`).join('');
@@ -348,11 +356,12 @@
       const items = byTier[tier].map(a => {
         const st = Achievements.state(a, S);
         const when = S.achv && S.achv[a.id];
-        return `<li class="ac ${st.done ? 'done' : ''}" style="--tc:${T.color}">
-          <span class="ac-ico">${st.done ? a.i : '🔒'}</span>
-          <span class="ac-txt"><b>${esc(a.t)}</b><small>${esc(a.d)}</small>
+        const hide = a.secret && !st.cur;   // geheime Errungenschaft erst nach dem Fund zeigen
+        return `<li class="ac ${st.done ? 'done' : ''}${hide ? ' hidden-ac' : ''}" style="--tc:${T.color}">
+          <span class="ac-ico">${st.done ? a.i : hide ? '❔' : '🔒'}</span>
+          <span class="ac-txt"><b>${hide ? 'Geheime Errungenschaft' : esc(a.t)}</b><small>${hide ? 'Im Labor versteckt – finde sie selbst.' : esc(a.d)}</small>
             <span class="ac-bar"><i style="width:${(st.frac * 100).toFixed(1)}%"></i></span></span>
-          <span class="ac-num">${st.done ? (when ? esc(String(when).split('-').reverse().join('.')) : '✓') : `${st.cur}/${a.goal}`}</span>
+          <span class="ac-num">${st.done ? (when ? esc(String(when).split('-').reverse().join('.')) : '✓') : hide ? '???' : `${st.cur}/${a.goal}`}</span>
         </li>`;
       }).join('');
       const done = byTier[tier].filter(a => S.achv && S.achv[a.id]).length;
@@ -373,8 +382,9 @@
         <li><b>Bestimmen:</b> Rate eine Art. Sieben Spalten zeigen, wie nah du bist: 🟩 Treffer, 🟨 gleiche Gruppe oder Nachbarstufe, ⬛ falsch.</li>
         <li><b>Nährboden-Test:</b> Trage ein Plättchen auf (z. B. Nitrat, Eisen(II), Sulfat, Licht). Starkes Wachstum = genau ihr Nährboden, schwach = gleiche Stoffgruppe. Viren wachsen nur auf ihrem Wirt.</li>
         <li><b>Achtung:</b> Jede falsche Bestimmung und jeder Test kostet 1 Integrität. Bei 0 sprengt die Kolonie die Schale – <b>☣ BIOHAZARD ALARM</b>, die Probe ist verloren.</li>
-        <li><b>Hinweise:</b> Fundort sofort, Typ nach ${CFG.HINT_TYPE_AT} Aktionen, Anfangsbuchstabe nach ${CFG.HINT_LETTER_AT}. Die <b>Koloniefarbe</b> verrät die Gildengruppe:</li>
+        <li><b>Tipps:</b> Der erste ist gratis, jede weitere Aktion deckt einen weiteren auf. Welche Kategorie du bekommst, ist Zufall – Typ, Gilde, Nährboden, Lebensraum, Form, Temperatur, Seltenheit oder Anfangsbuchstabe. Ein Klick auf den Tipp öffnet das <b>Lexikon</b>, schon danach gefiltert.</li>
       </ol>
+      <p class="muted">Die Gildengruppen und ihre Farben im Codex:</p>
       <div class="swatches">${swatches}</div>
       <ul class="howto plain">
         <li>🎟️ <b>Gratisprobe:</b> Alle ${CFG.TOKEN_EVERY} Entdeckungen und alle ${CFG.STREAK_TOKEN_EVERY} Tage Streak – max. ${CFG.TOKEN_MAX} lagerbar.</li>
@@ -483,6 +493,7 @@
     else if (act === 'share') share();
     else if (act === 'codex') codex();
     else if (act === 'book') Book.open(G.S);
+    else if (act === 'hintfilter') { try { Book.openWith(G.S, JSON.parse(b.dataset.f)); } catch (err) { Book.open(G.S); } }
     else if (act === 'achv') achievements();
     else if (act === 'detail') detail(b.dataset.id);
     else if (act === 'close') closeModal();
@@ -511,6 +522,28 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && $('modal').classList.contains('on')) closeModal();
     if (e.key === 'Escape' && $('hazard').classList.contains('on')) endHazard();
+  });
+
+  /* ---------------- Geheimer Knopf ----------------
+     Versteckt im Fußzeilen-Punkt; Tastencode "agar" tut dasselbe. */
+  function secretPress() {
+    Sfx.unlock();
+    const res = G.secret();
+    if (!res.ok) { toast('🔒 Der Schrank ist heute schon geplündert. Morgen wieder.'); Sfx.wrong(); return; }
+    Sfx.coin(); confetti(60, '#ffd23f');
+    toast(res.first ? '🕳️ Geheimfach entdeckt: Schwarzmarkt-Agarplatte!' : '🕳️ Schwarzmarkt-Agarplatte: +1 Probe', 'gold');
+    if (res.achv && res.achv.length) announce(res.achv, 1400);
+    render();
+    if (!G.current()) setTimeout(start, 700);
+  }
+  $('secret').addEventListener('click', secretPress);
+  let code = '';
+  document.addEventListener('keydown', e => {
+    const el = e.target;
+    if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (el instanceof Element && el.closest('input, textarea, select')) return;
+    code = (code + e.key.toLowerCase()).slice(-4);
+    if (code === 'agar') { code = ''; secretPress(); }
   });
 
   $('btnHelp').addEventListener('click', help);

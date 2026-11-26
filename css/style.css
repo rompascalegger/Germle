@@ -134,14 +134,29 @@ button, input, select, textarea { font-family: inherit; color: inherit; }
 .int-cells i.gone { background: #2a1416; border: 1px solid #5a2228; transform: scaleY(.6); }
 .integrity.danger .int-cells i.ok { background: linear-gradient(180deg, #ff8a95, var(--red)); animation: blink .6s infinite; }
 
-.hints { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.hints { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; align-items: center; }
+.hint-head { width: 100%; text-align: center; font: 500 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.hint-head b { color: var(--hz); font-size: 13px; }
 .hint {
   background: #0007; border: 1px solid var(--line); border-radius: 10px; padding: 5px 10px; font-size: 13px; font-weight: 600;
-  display: inline-flex; flex-direction: column; align-items: flex-start;
+  display: inline-flex; flex-direction: column; align-items: flex-start; position: relative; text-align: left;
 }
 .hint small { font: 500 9.5px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
-.hint.locked { opacity: .5; font-weight: 400; font-size: 12px; }
-.hint.swatch i { width: 40px; height: 14px; border-radius: 7px; margin-top: 3px; box-shadow: 0 0 10px currentColor; }
+.hint.locked { opacity: .5; font-weight: 400; font-size: 12px; border-style: dashed; }
+button.hint.can { cursor: pointer; padding-right: 26px; transition: border-color .2s, transform .1s; }
+button.hint.can:hover { border-color: var(--cyan); transform: translateY(-1px); }
+button.hint.can:active { transform: scale(.97); }
+.hint .mag { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 12px; opacity: .55; font-style: normal; }
+button.hint.can:hover .mag { opacity: 1; }
+
+/* Geheimer Knopf – im Fußzeilentext versteckt */
+.secret {
+  width: 16px; height: 16px; margin-left: 6px; padding: 0; vertical-align: -3px;
+  border: none; border-radius: 50%; background: var(--glow); opacity: .05; cursor: default;
+  transition: opacity .3s, box-shadow .3s, transform .2s;
+}
+.secret:hover, .secret:focus-visible { opacity: .9; cursor: pointer; box-shadow: 0 0 16px var(--glow); transform: scale(1.25); outline: none; }
+.ac.hidden-ac .ac-txt b { color: var(--muted); font-style: italic; }
 
 .test-box label { font: 500 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .test-row { display: flex; gap: 8px; margin-top: 6px; }
@@ -290,7 +305,9 @@ button.tile:hover { filter: brightness(1.2); }
 .bk-filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 6px; margin: 12px 0 8px; }
 .bk-filters input, .bk-filters select, .bk-filters button { width: 100%; font-size: 13px; padding: 8px 10px; }
 .bk-filters input { grid-column: 1 / -1; font-size: 15px; }
+.bk-filters select.neg { border-color: var(--red); background: #2a0e12; color: #ffc3ca; }
 .bk-count { font: 500 12px var(--mono); color: var(--muted); margin-bottom: 8px; }
+code { background: #0006; padding: 1px 5px; border-radius: 5px; font: 500 12px var(--mono); }
 .bk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 8px; max-height: 62vh; overflow: auto; padding-right: 4px; }
 .bk-entry {
   background: #0b1a1d; border: 1px solid var(--line); border-left: 4px solid var(--gc); border-radius: 12px; padding: 10px 12px;

@@ -53,7 +53,8 @@ const Germle = (() => {
   const fresh = () => ({
     v: 1, xp: 0, tokens: 0, meter: 0, streak: 0, best: 0, lastPlay: null,
     discovered: {}, escaped: {}, guildsDone: {}, groupsDone: {},
-    stats: { wins: 0, losses: 0, perfect: 0 },
+    stats: { wins: 0, losses: 0, perfect: 0, tests: 0, clean: 0, maxTokens: 0 },
+    achv: {},
     day: null, sound: true, seenHelp: false,
   });
   let S = load();
@@ -61,7 +62,16 @@ const Germle = (() => {
   function load() {
     try {
       const raw = localStorage.getItem(CFG.SAVE_KEY);
-      if (raw) return Object.assign(fresh(), JSON.parse(raw));
+      if (raw) {
+        const f = fresh(), old = JSON.parse(raw);
+        // Zähler eines älteren Spielstands nachrüsten und ungültige Werte heilen
+        const stats = Object.assign({}, f.stats, old.stats);
+        Object.keys(stats).forEach(k => { if (!Number.isFinite(stats[k])) stats[k] = f.stats[k] || 0; });
+        const s = Object.assign(f, old);
+        s.stats = stats;
+        s.achv = s.achv || {};
+        return s;
+      }
     } catch (e) { /* defekter Spielstand -> neu */ }
     return fresh();
   }
@@ -162,6 +172,7 @@ const Germle = (() => {
     const result = testResult(substrate, t);
     run.actions.push({ k: 't', s: substrate, r: result });
     run.integ--;
+    S.stats.tests++;
     const res = { result };
     if (run.integ <= 0) Object.assign(res, finish(run, false));
     save();
@@ -182,6 +193,7 @@ const Germle = (() => {
       out.isNew = isNew;
       out.xp = xp;
       S.stats.wins++;
+      if (run.integ >= 5) S.stats.clean++;
       if (isNew) {
         S.discovered[t.id] = { d: ensureDay().date, n: nGuesses };
         delete S.escaped[t.id];
@@ -208,6 +220,8 @@ const Germle = (() => {
       S.stats.losses++;
       if (!S.discovered[t.id]) S.escaped[t.id] = true;
     }
+    S.stats.maxTokens = Math.max(S.stats.maxTokens || 0, S.tokens);
+    out.achv = (typeof Achievements !== 'undefined') ? Achievements.check(S) : [];
     save();
     return out;
   }

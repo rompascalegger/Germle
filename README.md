@@ -27,15 +27,22 @@ Nach Änderungen die Versionsnummer `?v=` in `index.html` erhöhen, damit Browse
 
 - **Variable Belohnung:** Ziehung gewichtet nach Seltenheit (Häufig → Legendär), legendäre Funde mit Gold-Glow und Extra-Konfetti.
 - **Gratisprobe:** Gratis-Meter füllt sich mit jeder Entdeckung (5 = 1 Gratisprobe), dazu alle 3 Tage Streak eine. Max. 3 lagerbar.
-- **Fortschritt:** XP, 12 Laborlevel (Praktikant:in → Nobelpreisträger:in), Gilden- und Gruppen-Sets mit Bonus-XP, Codex-Prozent.
+- **Fortschritt:** XP, 12 Laborlevel (Praktikant:in → Nobelpreisträger:in), Gilden- und Gruppen-Sets mit Bonus-XP, Codex-Prozent, 55 Errungenschaften.
 - **Verknappung & Rückkehr:** Countdown bis Mitternacht, Streak 🔥, „fast voll“-Blinken am Gratis-Meter.
 - **Teilen:** Wordle-artiges Emoji-Ergebnis in die Zwischenablage.
+
+## Lexikon & Errungenschaften
+
+- **📚 Das Große Lexikon der Keime** – Nachschlagewerk mit allen 323 Mikroben: Steckbrief mit Gilde, Gildengruppe, Nährboden, Sauerstoffbedarf, Temperatur, Lebensraum, Form, Seltenheit und Fakt. Volltextsuche plus Filter nach Reich, Gilde, Nährboden, Lebensraum, Form, O₂, Temperatur, Seltenheit und Fundstatus (entdeckt / fehlend / entkommen), dazu sechs Sortierungen. Der **Codex** ist die eigene Sammlung, das Lexikon das Werkzeug beim Bestimmen.
+- **🏅 55 Errungenschaften** in vier Stufen (Bronze, Silber, Gold, Platin) mit Fortschrittsbalken: Reiche komplettieren, Stoffkreisläufe schließen, Seltenheiten jagen, Volltreffer, Biohazards überstehen, Streaks und Laborlevel. Freischaltungen erscheinen als Toast und werden mit Datum gespeichert; ältere Spielstände werden beim Laden nachgerechnet.
 
 ## Aufbau
 
 | Datei | Inhalt |
 | --- | --- |
 | `js/data.js` | Mikroben-Datenbank, Gilden, Nährböden, Habitate, Formen, Seltenheiten |
+| `js/achievements.js` | Errungenschaften: Bedingungen als `p(S)`-Funktionen, Stufen, Fortschritt |
+| `js/book.js` | Lexikon: Filter, Suche, Sortierung, Steckbriefe |
 | `js/game.js` | Spiellogik ohne DOM: Tag, Proben, Vergleich, XP, Streak, Gratisproben, Teilen. Alle Balancing-Werte in `CFG` |
 | `js/dish.js` | Petrischale (Canvas: Kolonien, Testplättchen, Risse, Ausbruch) und Mikroskop-Ansicht |
 | `js/audio.js` | Synthetisierte Töne und Biohazard-Sirene (WebAudio) |

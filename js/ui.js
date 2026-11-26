@@ -27,6 +27,9 @@
     $('pillTokens').classList.toggle('glow', S.tokens > 0);
     $('codexNum').textContent = Object.keys(S.discovered).length;
     $('codexTotal').textContent = '/' + D.MICROBES.length;
+    const ap = Achievements.progress(S);
+    $('achvNum').textContent = ap.done;
+    $('achvTotal').textContent = '/' + ap.total;
     $('btnSound').textContent = S.sound ? '🔊' : '🔇';
   }
 
@@ -218,6 +221,22 @@
     }
     if (res.won === true) setTimeout(() => winSheet(res), 700);
     if (res.won === false) setTimeout(() => hazard(res), 500);
+    if (res.achv && res.achv.length) announce(res.achv, res.won === false ? 2600 : 2000);
+  }
+
+  /* Freigeschaltete Errungenschaften nacheinander einblenden */
+  function announce(list, delay) {
+    list.forEach((a, i) => setTimeout(() => {
+      const tier = Achievements.TIERS[a.tier];
+      const el = document.createElement('div');
+      el.className = 'toast achv';
+      el.style.setProperty('--tc', tier.color);
+      el.innerHTML = `<span class="ac-ico">${a.i}</span><span><small>Errungenschaft · ${esc(tier.name)}</small><b>${esc(a.t)}</b></span>`;
+      $('toasts').appendChild(el);
+      Sfx.coin();
+      setTimeout(() => el.classList.add('out'), 3200);
+      setTimeout(() => el.remove(), 3700);
+    }, delay + i * 900));
   }
 
   /* ---------------- Gewinn ---------------- */
@@ -305,7 +324,7 @@
       <p class="muted">Jede Kachel ist eine Mikrobe. Die Gilde ist sichtbar – die Art musst du in der Petrischale entdecken.</p>
       <div class="cx-bar main"><i style="width:${(found / total * 100).toFixed(1)}%"></i></div>
       <div class="codex">${body}</div>
-      <div class="sheet-actions"><button class="btn primary" data-act="close">Schließen</button></div>`, 'wide');
+      <div class="sheet-actions"><button class="btn" data-act="book">📚 Lexikon</button><button class="btn" data-act="achv">🏅 Errungenschaften</button><button class="btn primary" data-act="close">Schließen</button></div>`, 'wide');
   }
 
   function detail(id) {
@@ -317,6 +336,32 @@
         ${attrs(m)}<p class="fact">💡 ${esc(m.fact)}</p></div>
       <div class="sheet-actions"><button class="btn" data-act="codex">◀ Codex</button><button class="btn primary" data-act="close">Schließen</button></div>`, 'win');
     Micro.draw($('microCv'), m, colorOf(m));
+  }
+
+  /* ---------------- Errungenschaften ---------------- */
+  function achievements() {
+    const S = G.S, p = Achievements.progress(S);
+    const byTier = { 1: [], 2: [], 3: [], 4: [] };
+    Achievements.LIST.forEach(a => byTier[a.tier].push(a));
+    const body = [4, 3, 2, 1].map(tier => {
+      const T = Achievements.TIERS[tier];
+      const items = byTier[tier].map(a => {
+        const st = Achievements.state(a, S);
+        const when = S.achv && S.achv[a.id];
+        return `<li class="ac ${st.done ? 'done' : ''}" style="--tc:${T.color}">
+          <span class="ac-ico">${st.done ? a.i : '🔒'}</span>
+          <span class="ac-txt"><b>${esc(a.t)}</b><small>${esc(a.d)}</small>
+            <span class="ac-bar"><i style="width:${(st.frac * 100).toFixed(1)}%"></i></span></span>
+          <span class="ac-num">${st.done ? (when ? esc(String(when).split('-').reverse().join('.')) : '✓') : `${st.cur}/${a.goal}`}</span>
+        </li>`;
+      }).join('');
+      const done = byTier[tier].filter(a => S.achv && S.achv[a.id]).length;
+      return `<section class="ac-group"><h3 style="--tc:${T.color}"><i></i>${T.name}<span>${done}/${byTier[tier].length}</span></h3><ul class="ac-list">${items}</ul></section>`;
+    }).join('');
+    openModal(`<h2>🏅 Errungenschaften <small>${p.done}/${p.total}</small></h2>
+      <div class="cx-bar main"><i style="width:${(p.done / p.total * 100).toFixed(1)}%"></i></div>
+      ${body}
+      <div class="sheet-actions"><button class="btn" data-act="book">📚 Lexikon</button><button class="btn primary" data-act="close">Schließen</button></div>`, 'wide');
   }
 
   /* ---------------- Anleitung & Statistik ---------------- */
@@ -336,6 +381,8 @@
         <li>⭐ Seltene Mikroben bringen mehr XP. Restintegrität gibt Bonus, ein Volltreffer verdoppelt.</li>
         <li>🏅 Komplette Gilden und Gildengruppen geben Extra-XP.</li>
         <li>🎯 Ziel: den Codex mit allen ${D.MICROBES.length} Mikroben füllen.</li>
+        <li>📚 <b>Lexikon:</b> Nachschlagewerk aller ${D.MICROBES.length} Keime – such und filtere beim Bestimmen nach Gilde, Nährboden oder Lebensraum.</li>
+        <li>🏅 <b>Errungenschaften:</b> ${Achievements.LIST.length} Auszeichnungen von Bronze bis Platin.</li>
       </ul>
       <div class="sheet-actions"><button class="btn primary" data-act="close">Los geht's</button></div>`);
   }
@@ -435,6 +482,8 @@
     if (act === 'start') start();
     else if (act === 'share') share();
     else if (act === 'codex') codex();
+    else if (act === 'book') Book.open(G.S);
+    else if (act === 'achv') achievements();
     else if (act === 'detail') detail(b.dataset.id);
     else if (act === 'close') closeModal();
     else if (act === 'dev-day') { G.dev.newDay(); render(); }
@@ -465,6 +514,8 @@
   });
 
   $('btnHelp').addEventListener('click', help);
+  $('btnBook').addEventListener('click', () => Book.open(G.S));
+  $('pillAchv').addEventListener('click', achievements);
   $('pillCodex').addEventListener('click', codex);
   $('pillStreak').addEventListener('click', stats);
   $('pillLevel').addEventListener('click', stats);
@@ -481,8 +532,13 @@
 
   /* ---------------- Start ---------------- */
   Sfx.on = G.S.sound;
+  Book.init(openModal);
   Dish.init($('dish'));
+  // Nachrüsten: Errungenschaften, die ein alter Spielstand schon erfüllt
+  const pending = Achievements.check(G.S);
+  if (pending.length) G.save();
   render();
+  if (pending.length && G.S.seenHelp) announce(pending, 900);
   if (!G.S.seenHelp) { G.S.seenHelp = true; G.save(); help(); }
   if (DEV) window.germle = G;
 })();

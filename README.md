@@ -1,0 +1,55 @@
+# Germle – Das tägliche Mikroben-Labor 🧫
+
+Ein webbasiertes Tagesspiel für **playle.io** (`germle.playle.io`). Jeden Tag liegen 3 unbekannte Proben in der Petrischale – Bakterien, Archaeen, Pilze und Viren. Bestimme sie, bevor die Kolonie die Schale sprengt. Ziel: **den Codex komplett füllen.**
+
+## Spielen
+
+Kein Build, keine Abhängigkeiten: `index.html` im Browser öffnen oder lokal ausliefern:
+
+```bash
+python -m http.server 5333
+```
+
+Dann <http://localhost:5333> öffnen. Mit `?dev=1` erscheinen Testknöpfe (neuer Tag, Gratisprobe, Reset) und `window.germle` in der Konsole.
+
+Nach Änderungen die Versionsnummer `?v=` in `index.html` erhöhen, damit Browser und GitHub Pages keine alten Dateien mischen.
+
+## Coreloop
+
+1. **3 Proben pro Tag**, Reset um Mitternacht (lokale Zeit).
+2. Pro Probe **7 Integritätspunkte**. Jede falsche Bestimmung und jeder Nährboden-Test kostet einen.
+3. **Bestimmen:** 7 Spalten Feedback – Typ, Gilde, Nährboden, O₂, Temperatur, Habitat, Form (🟩 Treffer, 🟨 gleiche Gruppe / Nachbarstufe, ⬛ falsch).
+4. **Nährboden-Test:** Plättchen (Nitrat, Eisen(II), Sulfat, Methan, Licht, Holz, Wirt: Bakterium …) zeigt starkes, schwaches oder kein Wachstum.
+5. **Hinweise:** Fundort sofort, Typ nach 3 Aktionen, Anfangsbuchstabe nach 5. Die Koloniefarbe verrät die Gildengruppe.
+6. Integrität 0 → **☣ BIOHAZARD ALARM** (Sirene, Blinken, Vibration) – Game Over für diese Probe, die Mikrobe entkommt.
+
+## Dopaminzyklus
+
+- **Variable Belohnung:** Ziehung gewichtet nach Seltenheit (Häufig → Legendär), legendäre Funde mit Gold-Glow und Extra-Konfetti.
+- **Gratisprobe:** Gratis-Meter füllt sich mit jeder Entdeckung (5 = 1 Gratisprobe), dazu alle 3 Tage Streak eine. Max. 3 lagerbar.
+- **Fortschritt:** XP, 12 Laborlevel (Praktikant:in → Nobelpreisträger:in), Gilden- und Gruppen-Sets mit Bonus-XP, Codex-Prozent.
+- **Verknappung & Rückkehr:** Countdown bis Mitternacht, Streak 🔥, „fast voll“-Blinken am Gratis-Meter.
+- **Teilen:** Wordle-artiges Emoji-Ergebnis in die Zwischenablage.
+
+## Aufbau
+
+| Datei | Inhalt |
+| --- | --- |
+| `js/data.js` | Mikroben-Datenbank, Gilden, Nährböden, Habitate, Formen, Seltenheiten |
+| `js/game.js` | Spiellogik ohne DOM: Tag, Proben, Vergleich, XP, Streak, Gratisproben, Teilen. Alle Balancing-Werte in `CFG` |
+| `js/dish.js` | Petrischale (Canvas: Kolonien, Testplättchen, Risse, Ausbruch) und Mikroskop-Ansicht |
+| `js/audio.js` | Synthetisierte Töne und Biohazard-Sirene (WebAudio) |
+| `js/ui.js` | Oberfläche, Codex, Modale, Konfetti |
+| `DESIGN.md` | 5 Spielkonzepte mit Coreloop und Dopaminzyklus |
+
+Spielstand liegt in `localStorage` (`germle_v1`).
+
+## Datenbank erweitern
+
+Neue Zeile im Array `RAW` in `js/data.js`:
+
+```js
+['Lateinischer Name', 'Deutscher Name', 'B', 'Gilde', 'Nährboden', 'aerob', 'mesophil', 'Boden', 'Stäbchen', 3, 'Fakt.'],
+```
+
+Typ `B`/`A`/`P`/`V`. Gilde, Nährboden, Habitat und Form müssen in den Tabellen oben in der Datei stehen – unbekannte Werte meldet die Konsole beim Laden.

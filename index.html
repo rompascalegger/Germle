@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1416">
+<title>Germle – Das tägliche Mikroben-Labor</title>
+<meta name="description" content="Germle – identifiziere jeden Tag 3 unbekannte Mikroben in der Petrischale. Bakterien, Archaeen, Pilze und Viren: Entdecke sie alle, bevor der Biohazard-Alarm losgeht.">
+<meta property="og:title" content="Germle – Das tägliche Mikroben-Labor">
+<meta property="og:description" content="3 Proben am Tag. Eine Petrischale. Entdecke alle Mikroben – bevor sie die Schale sprengen.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23102226' stroke='%2391f2d8' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23e9c46a'/%3E%3Ccircle cx='25' cy='27' r='6' fill='%235ff2a0'/%3E%3Ccircle cx='39' cy='36' r='4.5' fill='%23ff6b8a'/%3E%3Ccircle cx='30' cy='40' r='3' fill='%2391f2d8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=4">
+</head>
+<body>
+
+<div id="app">
+  <header class="top">
+    <a class="brand" href="#" id="brand" aria-label="Germle">
+      <span class="brand-dish" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-text">Germle<small>Mikroben-Labor</small></span>
+    </a>
+    <div class="top-pills">
+      <button class="pill lvl" id="pillLevel" title="Laborlevel">
+        <span class="lvl-num" id="lvlNum">1</span>
+        <span class="lvl-meta"><b id="lvlTitle">Praktikant:in</b><span class="xpbar"><i id="xpFill"></i></span></span>
+      </button>
+      <button class="pill" id="pillStreak" title="Tage in Folge">🔥 <b id="streakNum">0</b></button>
+      <button class="pill" id="pillTokens" title="Gratisproben">🎟️ <b id="tokenNum">0</b></button>
+      <button class="pill" id="pillCodex" title="Codex">📖 <b id="codexNum">0</b><small id="codexTotal">/0</small></button>
+      <button class="icon" id="btnHelp" aria-label="Anleitung" title="Anleitung">?</button>
+      <button class="icon" id="btnSound" aria-label="Ton an/aus" title="Ton">🔊</button>
+    </div>
+  </header>
+
+  <section class="daybar" aria-label="Tagesproben">
+    <div class="samples" id="samplePips"></div>
+    <div class="meter" title="Mit jeder Entdeckung füllt sich der Gratis-Meter">
+      <span class="meter-lbl">Gratisprobe</span>
+      <span class="meter-track" id="meterTrack"></span>
+      <span class="meter-txt" id="meterTxt">0/5</span>
+    </div>
+  </section>
+
+  <main class="lab" id="lab">
+    <section class="bench">
+      <div class="dish-wrap" id="dishWrap">
+        <canvas id="dish" width="420" height="420" aria-label="Petrischale"></canvas>
+        <div class="dish-label" id="dishLabel">Probe —</div>
+      </div>
+      <div class="integrity" aria-label="Integrität der Petrischale">
+        <span class="int-lbl">Integrität</span>
+        <span class="int-cells" id="intCells"></span>
+      </div>
+      <div class="hints" id="hints"></div>
+      <div class="test-box" id="testBox">
+        <label for="testSel">Nährboden-Test</label>
+        <div class="test-row">
+          <select id="testSel"></select>
+          <button class="btn" id="testBtn">Auftragen <small>−1</small></button>
+        </div>
+        <div class="tests" id="testList"></div>
+      </div>
+    </section>
+
+    <section class="analysis">
+      <div class="guess-box" id="guessBox">
+        <div class="search">
+          <input id="guessInput" type="text" autocomplete="off" spellcheck="false" placeholder="Mikrobe bestimmen … (lateinisch oder deutsch)" aria-label="Mikrobe raten">
+          <button class="btn primary" id="guessBtn">Bestimmen</button>
+          <ul class="suggest" id="suggest" role="listbox"></ul>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="grid" id="grid">
+          <thead><tr>
+            <th>Mikrobe</th><th>Typ</th><th>Gilde</th><th>Nährboden</th><th>O₂</th><th>Temp.</th><th>Habitat</th><th>Form</th>
+          </tr></thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+        <div class="grid-empty" id="gridEmpty">Noch keine Bestimmung. Rate eine Mikrobe oder setze einen Nährboden-Test.</div>
+      </div>
+      <div class="legend">
+        <span><i class="c hit"></i>Treffer</span>
+        <span><i class="c near"></i>Nah dran (gleiche Gruppe / Nachbarstufe)</span>
+        <span><i class="c miss"></i>Falsch</span>
+        <span>↑↓ Temperatur höher/tiefer</span>
+      </div>
+    </section>
+
+    <section class="idle" id="idle"></section>
+  </main>
+
+  <footer class="foot">
+    <a href="https://www.playle.io" class="playle">◀ Mehr Spiele auf <b>playle.io</b></a>
+    <span>Germle · Alle Angaben ohne Gewähr – keine Laboranleitung.</span>
+  </footer>
+</div>
+
+<!-- Modale -->
+<div class="modal" id="modal" aria-hidden="true"><div class="sheet" id="sheet"></div></div>
+
+<!-- Biohazard -->
+<div class="hazard" id="hazard" aria-hidden="true">
+  <div class="hz-stripes"></div>
+  <div class="hz-core">
+    <div class="hz-sym">☣</div>
+    <h1>BIOHAZARD ALARM</h1>
+    <p class="hz-sub">Petrischale kompromittiert · Kontamination im Labor</p>
+    <div class="hz-reveal" id="hzReveal"></div>
+    <button class="btn danger" id="hzBtn">Labor dekontaminieren</button>
+  </div>
+</div>
+
+<canvas id="fx"></canvas>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script src="js/data.js?v=4"></script>
+<script src="js/audio.js?v=4"></script>
+<script src="js/game.js?v=4"></script>
+<script src="js/dish.js?v=4"></script>
+<script src="js/ui.js?v=4"></script>
+</body>
+</html>
